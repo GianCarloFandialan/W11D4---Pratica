@@ -75,6 +75,76 @@ function search() {
     }
     found.classList.add("text-white");
     createCards(searchField.value, searchSection);
+    searchFieldValue = searchField.value;
     searchField.value = "";
 }
 
+const modalBody = document.querySelector(".modal-body");
+let albums = [];
+let searchFieldValue = "";
+
+console.log(eminemSection);
+
+function createList(artist) {
+    fetch(`https://striveschool-api.herokuapp.com/api/deezer/search?q=${artist}`)
+
+        .then(response => { return response.json()})
+
+        .then(data => {
+            //"Estraggo" l'array dall'API
+            let arraySongs = data.data;
+
+            //Creo un ciclo che crea una card per ogni canzone
+            arraySongs.forEach(song => {
+                //Creo un filtro in modo tale che esca solo l'artista che si cerca oppure l'artista della sezione
+
+                if (song.artist.name.toLowerCase() != artist) {
+                    return;
+                }
+
+
+                if (albums.includes(song.album.title)) {
+                    return
+                } else {
+                    albums.unshift(song.album.title);
+                    let card = document.createElement("div");
+                    card.classList.add("card");
+                    card.classList.add("mb-3");
+                    card.classList.add("text-white");
+                    card.style.backgroundColor = "black";
+    
+                    card.innerHTML = 
+                    `
+                    <div class="row no-gutters">
+                        <div class="col-md-4">
+                            <img src="${song.album.cover}" class="card-img" alt="${song.album.cover}">
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body">
+                                <h3 class="card-title">${song.album.title}</h3>
+                                <h5 class="card-text">${song.artist.name}</h5>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                    modalBody.appendChild(card)
+                }
+            });
+        })
+    
+        .catch(e => {console.error("Errore in jsonplaceholder:", e)})
+}
+
+const createListButton = document.getElementById("createList");
+
+createListButton.addEventListener("click", function() {
+    modalBody.innerHTML = "";
+    if (eminemSection.parentNode.classList.contains("d-none")) {
+        createList(searchFieldValue);
+    } else {
+        createList("eminem");
+        createList("metallica");
+        createList("queen");
+    }
+    searchFieldValue = "";
+});
